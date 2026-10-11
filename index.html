@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>MSC Trade — Plateforme Commerciale Gabon</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  :root{
+    --orange:#E8440F;
+    --orange-light:#F26A2E;
+    --navy:#1A3A5C;
+    --navy-dark:#0F2440;
+    --blue:#2E6BA6;
+    --blue-light:#5B85B8;
+    --blue-pale:#E8EFF7;
+    --bg:#F5F7FA;
+    --white:#FFFFFF;
+    --gray:#6B7C93;
+    --gray-light:#E2E8F0;
+    --success:#2ECC71;
+    --warning:#F39C12;
+    --danger:#E74C3C;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif}
+  body{background:var(--bg);color:var(--navy-dark);display:flex;min-height:100vh}
+
+  /* SIDEBAR */
+  .sidebar{width:240px;background:var(--navy);color:var(--white);position:fixed;height:100vh;overflow-y:auto;transition:all .3s}
+  .logo-box{padding:20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(255,255,255,.1)}
+  .logo-icon{width:44px;height:44px;background:var(--orange);border-radius:8px;position:relative;overflow:hidden;display:flex;align-items:flex-end;justify-content:center}
+  .logo-icon::before{content:'';position:absolute;top:0;left:0;right:0;height:55%;background:var(--orange)}
+  .logo-icon svg{position:relative;z-index:2;width:30px;height:30px}
+  .logo-text{font-weight:700;font-size:18px;letter-spacing:1px}
+  .logo-text small{display:block;font-size:9px;color:var(--orange);font-weight:600;letter-spacing:1.5px}
+  .nav-menu{padding:15px 0}
+  .nav-item{padding:12px 20px;cursor:pointer;display:flex;align-items:center;gap:12px;font-size:14px;color:#B8C7D9;transition:all .2s;border-left:3px solid transparent}
+  .nav-item:hover{background:rgba(255,255,255,.05);color:var(--white)}
+  .nav-item.active{background:rgba(232,68,15,.1);color:var(--orange);border-left-color:var(--orange)}
+  .nav-item svg{width:18px;height:18px;flex-shrink:0}
+  .nav-section{padding:10px 20px 5px;font-size:10px;text-transform:uppercase;color:#6B7C93;letter-spacing:1.5px;margin-top:10px}
+
+  /* MAIN */
+  .main{margin-left:240px;flex:1;min-height:100vh}
+  .header{background:var(--white);padding:15px 30px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,.04);position:sticky;top:0;z-index:10}
+  .search-box{display:flex;align-items:center;background:var(--bg);border-radius:8px;padding:8px 15px;width:350px}
+  .search-box input{border:none;background:none;outline:none;margin-left:10px;width:100%;font-size:14px}
+  .header-actions{display:flex;align-items:center;gap:15px}
+  .icon-btn{width:38px;height:38px;border-radius:8px;background:var(--bg);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;color:var(--navy)}
+  .badge{position:absolute;top:-3px;right:-3px;background:var(--orange);color:white;font-size:10px;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700}
+  .user-profile{display:flex;align-items:center;gap:10px;cursor:pointer;padding:5px 10px;border-radius:8px;transition:background .2s}
+  .user-profile:hover{background:var(--bg)}
+  .avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--orange),var(--blue));display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:14px}
+  .user-info{line-height:1.2}
+  .user-info strong{font-size:13px;display:block}
+  .user-info small{font-size:11px;color:var(--gray)}
+
+  .content{padding:30px}
+  .page{display:none}
+  .page.active{display:block;animation:fadeIn .3s}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+  .page-title{font-size:24px;font-weight:700;margin-bottom:5px;color:var(--navy-dark)}
+  .page-subtitle{color:var(--gray);font-size:14px;margin-bottom:25px}
+
+  /* HERO IMAGE */
+  .hero-banner{background:linear-gradient(135deg,rgba(26,58,92,.85),rgba(232,68,15,.75)),url('https://images.unsplash.com/photo-1489392191049-fc10c97e64b6?w=1200') center/cover;border-radius:12px;padding:40px;color:white;margin-bottom:25px;position:relative;overflow:hidden}
+  .hero-banner::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M0 50 Q25 30 50 50 T100 50" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="2"/></svg>');background-size:200px;opacity:.3}
+  .hero-banner h1{font-size:32px;margin-bottom:10px;position:relative}
+  .hero-banner p{font-size:16px;opacity:.95;position:relative}
+
+  /* KPI CARDS */
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;margin-bottom:25px}
+  .kpi-card{background:var(--white);padding:20px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.04);border-left:4px solid var(--orange);position:relative;overflow:hidden}
+  .kpi-card.blue{border-left-color:var(--blue)}
+  .kpi-card.navy{border-left-color:var(--navy)}
+  .kpi-card.green{border-left-color:var(--success)}
+  .kpi-label{font-size:12px;color:var(--gray);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+  .kpi-value{font-size:28px;font-weight:700;color:var(--navy-dark)}
+  .kpi-change{font-size:12px;margin-top:5px;display:flex;align-items:center;gap:5px}
+  .kpi-change.up{color:var(--success)}
+  .kpi-change.down{color:var(--danger)}
+
+  /* CARDS */
+  .card{background:var(--white);border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.04);padding:22px;margin-bottom:20px}
+  .card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+  .card-title{font-size:16px;font-weight:700;color:var(--navy-dark)}
+  .card-actions{display:flex;gap:8px}
+
+  /* BUTTONS */
+  .btn{padding:8px 16px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;transition:all .2s}
+  .btn-primary{background:var(--orange);color:white}
+  .btn-primary:hover{background:var(--orange-light);transform:translateY(-1px)}
+  .btn-secondary{background:var(--blue-pale);color:var(--navy)}
+  .btn-secondary:hover{background:#D4E2F2}
+  .btn-outline{background:transparent;border:1px solid var(--gray-light);color:var(--navy)}
+  .btn-outline:hover{border-color:var(--orange);color:var(--orange)}
+  .btn-sm{padding:5px 10px;font-size:12px}
+
+  /* GRID LAYOUT */
+  .grid-2{display:grid;grid-template-columns:2fr 1fr;gap:20px}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  @media(max-width:1200px){.grid-2,.grid-3{grid-template-columns:1fr}}
+
+  /* TABLE */
+  table{width:100%;border-collapse:collapse}
+  th{text-align:left;padding:12px;font-size:11px;text-transform:uppercase;color:var(--gray);letter-spacing:1px;border-bottom:2px solid var(--gray-light);font-weight:600}
+  td{padding:14px 12px;border-bottom:1px solid var(--gray-light);font-size:14px}
+  tr:hover td{background:var(--blue-pale)}
+  .status{padding:4px 10px;border-radius:12px;font-size:11px;font-weight:600;display:inline-block}
+  .status.active{background:#E8F8F0;color:var(--success)}
+  .status.pending{background:#FFF4E0;color:var(--warning)}
+  .status.risk{background:#FDE8E8;color:var(--danger)}
+
+  /* CHARTS */
+  .chart-container{position:relative;height:280px}
+
+  /* PORTFOLIO CARDS */
+  .portfolio-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
+  .portfolio-card{background:var(--white);border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.04);transition:all .2s;cursor:pointer}
+  .portfolio-card:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,.08)}
+  .portfolio-header{height:80px;background:linear-gradient(135deg,var(--orange),var(--blue));position:relative;padding:15px;color:white}
+  .portfolio-header h3{font-size:16px;font-weight:700}
+  .portfolio-header small{font-size:11px;opacity:.9}
+  .portfolio-body{padding:18px}
+  .portfolio-stat{display:flex;justify-content:space-between;padding:8px 0;font-size:13px}
+  .portfolio-stat strong{color:var(--navy-dark)}
+  .portfolio-stat span{color:var(--gray)}
+  .progress-bar{height:6px;background:var(--gray-light);border-radius:3px;overflow:hidden;margin-top:10px}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--orange),var(--blue));border-radius:3px}
+
+  /* COMPANY LIST */
+  .company-item{display:flex;align-items:center;padding:14px;border-radius:8px;transition:background .2s;cursor:pointer}
+  .company-item:hover{background:var(--blue-pale)}
+  .company-logo{width:42px;height:42px;border-radius:8px;background:var(--blue-pale);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--blue);margin-right:12px;font-size:14px}
+  .company-info{flex:1}
+  .company-info strong{display:block;font-size:14px;color:var(--navy-dark)}
+  .company-info small{font-size:12px;color:var(--gray)}
+  .company-score{font-weight:700;font-size:14px;color:var(--orange)}
+
+  /* FILTERS */
+  .filters{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+  .filter-chip{padding:6px 14px;border-radius:20px;background:var(--white);border:1px solid var(--gray-light);font-size:13px;cursor:pointer;transition:all .2s}
+  .filter-chip.active,.filter-chip:hover{background:var(--orange);color:white;border-color:var(--orange)}
+
+  /* FORM */
+  .form-group{margin-bottom:18px}
+  .form-group label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:var(--navy)}
+  .form-control{width:100%;padding:10px 12px;border:1px solid var(--gray-light);border-radius:6px;font-size:14px;transition:border-color .2s}
+  .form-control:focus{outline:none;border-color:var(--orange)}
+  select.form-control{background:var(--white)}
+
+  /* MODAL */
+  .modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,36,64,.6);z-index:100;align-items:center;justify-content:center}
+  .modal.active{display:flex}
+  .modal-content{background:var(--white);border-radius:12px;padding:30px;max-width:600px;width:90%;max-height:90vh;overflow-y:auto}
+  .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+  .modal-header h2{font-size:20px;color:var(--navy-dark)}
+  .close-btn{background:none;border:none;font-size:24px;cursor:pointer;color:var(--gray)}
+
+  /* TIMELINE */
+  .timeline{position:relative;padding-left:25px}
+  .timeline::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;background:var(--gray-light)}
+  .timeline-item{position:relative;padding-bottom:20px}
+  .timeline-item::before{content:'';position:absolute;left:-21px;top:5px;width:12px;height:12px;border-radius:50%;background:var(--orange);border:3px solid var(--white);box-shadow:0 0 0 1px var(--orange)}
+  .timeline-item.done::before{background:var(--success);box-shadow:0 0 0 1px var(--success)}
+  .timeline-date{font-size:11px;color:var(--gray);margin-bottom:3px}
+  .timeline-content{font-size:14px;color:var(--navy-dark)}
+
+  /* ALERT */
+  .alert{padding:12px 15px;border-radius:8px;margin-bottom:12px;font-size:13px;display:flex;align-items:center;gap:10px}
+  .alert-warning{background:#FFF4E0;border-left:4px solid var(--warning);color:#8B6914}
+  .alert-info{background:var(--blue-pale);border-left:4px solid var(--blue);color:var(--navy)}
+  .alert-success{background:#E8F8F0;border-left:4px solid var(--success);color:#1E7E4A}
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:var(--bg)}
+  ::-webkit-scrollbar-thumb{background:var(--blue-light);border-radius:4px}
+  ::-webkit-scrollbar-thumb:hover{background:var(--blue)}
+
+  /* IMAGE SECTIONS */
+  .context-image{width:100%;height:180px;object-fit:cover;border-radius:8px;margin-bottom:15px}
+  .image-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:15px;margin-bottom:20px}
+  .image-card{position:relative;border-radius:12px;overflow:hidden;height:200px;cursor:pointer}
+  .image-card img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
+  .image-card:hover img{transform:scale(1.05)}
+  .image-overlay{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.8));padding:15px;color:white}
+  .image-overlay h4{font-size:14px;margin-bottom:3px}
+  .image-overlay small{font-size:11px;opacity:.9}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo-box">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="white"><path d="M3 17l6-8 4 5 8-10"/><path d="M17 4h4v4" stroke="white" stroke-width="2" fill="none"/></svg>
+    </div>
+    <div class="logo-text">MSC<small>TRADE</small></div>
+  </div>
+  <nav class="nav-menu">
+    <div class="nav-item active" data-page="dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Tableau de bord
+    </div>
+    <div class="nav-item" data-page="portfolios">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7h-3V5a2 2 0 00-2-2H9a2 2 0 00-2 2v2H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/></svg>
+      Portefeuilles
+    </div>
+    <div class="nav-item" data-page="companies">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h1M9 13h1M9 17h1M14 9h1M14 13h1M14 17h1"/></svg>
+      Entreprises
+    </div>
+    <div class="nav-item" data-page="segmentation">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15 15 0 010 20M2 12h20"/></svg>
+      Segmentation
+    </div>
+    <div class="nav-item" data-page="crm">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      CRM & Contacts
+    </div>
+    <div class="nav-item" data-page="offers">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+      Offres & Devis
+    </div>
+    <div class="nav-item" data-page="watch">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      Veille & Alertes
+    </div>
+    <div class="nav-section">Outils</div>
+    <div class="nav-item" data-page="training">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+      Formation
+    </div>
+    <div class="nav-item" data-page="network">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2M16 3.13a4 4 0 010 7.75M21 21v-2a4 4 0 00-3-3.87"/></svg>
+      Réseau Partenaires
+    </div>
+    <div class="nav-item" data-page="finance">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+      Commissions
+    </div>
+  </nav>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <header class="header">
+    <div class="search-box">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B7C93" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input type="text" placeholder="Rechercher entreprise, contact, offre...">
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+        <span class="badge">5</span>
+      </button>
+      <button class="icon-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      </button>
+      <div class="user-profile">
+        <div class="avatar">JO</div>
+        <div class="user-info">
+          <strong>Jean Obame</strong>
+          <small>Directeur Commercial</small>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="dashboard">
+      <div class="hero-banner">
+        <h1>Bienvenue sur MSC Trade Gabon</h1>
+        <p>Gérez vos portefeuilles d'entreprises partenaires à travers tout le Gabon</p>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Chiffre d'affaires</div>
+          <div class="kpi-value">1,42 Md FCFA</div>
+          <div class="kpi-change up">▲ +12,5% vs mois dernier</div>
+        </div>
+        <div class="kpi-card blue">
+          <div class="kpi-label">Portefeuilles actifs</div>
+          <div class="kpi-value">24</div>
+          <div class="kpi-change up">▲ +3 ce mois</div>
+        </div>
+        <div class="kpi-card navy">
+          <div class="kpi-label">Entreprises suivies</div>
+          <div class="kpi-value">348</div>
+          <div class="kpi-change up">▲ +28</div>
+        </div>
+        <div class="kpi-card green">
+          <div class="kpi-label">Taux de conversion</div>
+          <div class="kpi-value">23,8%</div>
+          <div class="kpi-change up">▲ +2,1 pts</div>
+        </div>
+      </div>
+
+      <div class="image-grid">
+        <div class="image-card">
+          <img src="https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=400" alt="Libreville">
+          <div class="image-overlay">
+            <h4>Libreville</h4>
+            <small>156 entreprises actives</small>
+          </div>
+        </div>
+        <div class="image-card">
+          <img src="https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=400" alt="Port-Gentil">
+          <div class="image-overlay">
+            <h4>Port-Gentil</h4>
+            <small>89 entreprises actives</small>
+          </div>
+        </div>
+        <div class="image-card">
+          <img src="https://images.unsplash.com/photo-1489392191049-fc10c97e64b6?w=400" alt="Franceville">
+          <div class="image-overlay">
+            <h4>Franceville</h4>
+            <small>67 entreprises actives</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Évolution du CA par mois (en millions FCFA)</h3>
+            <div class="card-actions">
+              <button class="btn btn-sm btn-outline">6 mois</button>
+              <button class="btn btn-sm btn-primary">12 mois</button>
+            </div>
+          </div>
+          <div class="chart-container"><canvas id="chartRevenue"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Répartition sectorielle</h3>
+          </div>
+          <div class="chart-container"><canvas id="chartSector"></canvas></div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Alertes & signaux</h3>
+            <button class="btn btn-sm btn-secondary">Voir tout</button>
+          </div>
+          <div class="alert alert-warning">⚠️ 3 entreprises du secteur pétrolier en ralentissement</div>
+          <div class="alert alert-info">💡 Opportunité détectée : SOBRAGA cherche financement</div>
+          <div class="alert alert-success">✅ Contrat signé avec Gabon Telecom (25M FCFA)</div>
+          <div class="alert alert-warning">️ Échéance dans 7 jours : Pharmacie Centrale SARL</div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Activité récente</h3>
+          </div>
+          <div class="timeline">
+            <div class="timeline-item done">
+              <div class="timeline-date">Aujourd'hui, 14:30</div>
+              <div class="timeline-content">Appel avec <strong>Gabon Telecom</strong> — RDV confirmé jeudi</div>
+            </div>
+            <div class="timeline-item done">
+              <div class="timeline-date">Aujourd'hui, 11:00</div>
+              <div class="timeline-content">Devis envoyé à <strong>Pharmacie Centrale</strong></div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-date">Hier, 16:45</div>
+              <div class="timeline-content">Nouveau lead : <strong>Bois Précieux SA</strong></div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-date">Hier, 09:20</div>
+              <div class="timeline-content">Webinaire sectoriel santé — 42 participants</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PORTFOLIOS -->
+    <div class="page" id="portfolios">
+      <h1 class="page-title">Portefeuilles d'entreprises</h1>
+      <p class="page-subtitle">Gérez et suivez vos portefeuilles commerciaux au Gabon</p>
+
+      <div class="card" style="margin-bottom:20px">
+        <div class="filters">
+          <div class="filter-chip active">Tous (24)</div>
+          <div class="filter-chip">Pétrolier & Minier (8)</div>
+          <div class="filter-chip">Santé (6)</div>
+          <div class="filter-chip">Finance (5)</div>
+          <div class="filter-chip">Bois & Foresterie (3)</div>
+          <div class="filter-chip">Télécoms (2)</div>
+          <button class="btn btn-primary" style="margin-left:auto" onclick="openModal('modalPortfolio')">+ Nouveau portefeuille</button>
+        </div>
+      </div>
+
+      <div class="portfolio-grid">
+        <div class="portfolio-card">
+          <div class="portfolio-header">
+            <h3>Pétroliers & Miniers</h3>
+            <small>8 entreprises • Jean Obame</small>
+          </div>
+          <div class="portfolio-body">
+            <div class="portfolio-stat"><span>CA généré</span><strong>420M FCFA</strong></div>
+            <div class="portfolio-stat"><span>Taux conversion</span><strong>31%</strong></div>
+            <div class="portfolio-stat"><span>Potentiel</span><strong>Élevé</strong></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:78%"></div></div>
+          </div>
+        </div>
+        <div class="portfolio-card">
+          <div class="portfolio-header" style="background:linear-gradient(135deg,var(--blue),var(--navy))">
+            <h3>Santé & Pharma</h3>
+            <small>6 entreprises • Marie Ndong</small>
+          </div>
+          <div class="portfolio-body">
+            <div class="portfolio-stat"><span>CA généré</span><strong>280M FCFA</strong></div>
+            <div class="portfolio-stat"><span>Taux conversion</span><strong>28%</strong></div>
+            <div class="portfolio-stat"><span>Potentiel</span><strong>Moyen</strong></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:62%"></div></div>
+          </div>
+        </div>
+        <div class="portfolio-card">
+          <div class="portfolio-header" style="background:linear-gradient(135deg,var(--navy),var(--orange))">
+            <h3>Finance & Banque</h3>
+            <small>5 entreprises • Paul Mba</small>
+          </div>
+          <div class="portfolio-body">
+            <div class="portfolio-stat"><span>CA généré</span><strong>580M FCFA</strong></div>
+            <div class="portfolio-stat"><span>Taux conversion</span><strong>35%</strong></div>
+            <div class="portfolio-stat"><span>Potentiel</span><strong>Très élevé</strong></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:88%"></div></div>
+          </div>
+        </div>
+        <div class="portfolio-card">
+          <div class="portfolio-header" style="background:linear-gradient(135deg,var(--orange-light),var(--orange))">
+            <h3>Bois & Foresterie</h3>
+            <small>3 entreprises • Sophie Ondo</small>
+          </div>
+          <div class="portfolio-body">
+            <div class="portfolio-stat"><span>CA généré</span><strong>145M FCFA</strong></div>
+            <div class="portfolio-stat"><span>Taux conversion</span><strong>18%</strong></div>
+            <div class="portfolio-stat"><span>Potentiel</span><strong>Élevé</strong></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:45%"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMPANIES -->
+    <div class="page" id="companies">
+      <h1 class="page-title">Entreprises gabonaises</h1>
+      <p class="page-subtitle">Base de données complète des entreprises partenaires</p>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="filters" style="margin:0">
+            <div class="filter-chip active">Toutes (348)</div>
+            <div class="filter-chip">Clients actifs</div>
+            <div class="filter-chip">Prospects</div>
+            <div class="filter-chip">À risque</div>
+          </div>
+          <button class="btn btn-primary">+ Ajouter</button>
+        </div>
+        <table>
+          <thead>
+            <tr><th>Entreprise</th><th>Secteur</th><th>Ville</th><th>Score</th><th>Statut</th><th>CA potentiel</th><th></th></tr>
+          </thead>
+          <tbody>
+            <tr><td><div style="display:flex;align-items:center;gap:10px"><div class="company-logo">GT</div><div><strong>Gabon Telecom</strong><br><small style="color:var(--gray);font-size:11px">gabontelecom.ga</small></div></div></td><td>Télécoms</td><td>Libreville</td><td style="color:var(--orange);font-weight:700">92/100</td><td><span class="status active">Actif</span></td><td>120M FCFA</td><td><button class="btn btn-sm btn-outline">Voir</button></td></tr>
+            <tr><td><div style="display:flex;align-items:center;gap:10px"><div class="company-logo">PC</div><div><strong>Pharmacie Centrale</strong><br><small style="color:var(--gray);font-size:11px">pharmacie-centrale.ga</small></div></div></td><td>Santé</td><td>Libreville</td><td style="color:var(--orange);font-weight:700">78/100</td><td><span class="status pending">En négociation</span></td><td>65M FCFA</td><td><button class="btn btn-sm btn-outline">Voir</button></td></tr>
+            <tr><td><div style="display:flex;align-items:center;gap:10px"><div class="company-logo">BP</div><div><strong>Bois Précieux SA</strong><br><small style="color:var(--gray);font-size:11px">bois-precieux.ga</small></div></div></td><td>Foresterie</td><td>Port-Gentil</td><td style="color:var(--orange);font-weight:700">88/100</td><td><span class="status active">Actif</span></td><td>85M FCFA</td><td><button class="btn btn-sm btn-outline">Voir</button></td></tr>
+            <tr><td><div style="display:flex;align-items:center;gap:10px"><div class="company-logo">SB</div><div><strong>SOBRAGA</strong><br><small style="color:var(--gray);font-size:11px">sobraga.ga</small></div></div></td><td>Agroalimentaire</td><td>Libreville</td><td style="color:var(--warning);font-weight:700">65/100</td><td><span class="status pending">Prospect</span></td><td>180M FCFA</td><td><button class="btn btn-sm btn-outline">Voir</button></td></tr>
+            <tr><td><div style="display:flex;align-items:center;gap:10px"><div class="company-logo">BG</div><div><strong>BGFI Bank Gabon</strong><br><small style="color:var(--gray);font-size:11px">bgfigabon.com</small></div></div></td><td>Finance</td><td>Libreville</td><td style="color:var(--orange);font-weight:700">95/100</td><td><span class="status active">Actif</span></td><td>240M FCFA</td><td><button class="btn btn-sm btn-outline">Voir</button></td></tr>
+            <tr><td><div style="display:flex;align-items:center;gap:10px"><div class="company-logo">CM</div><div><strong>COMILOG</strong><br><small style="color:var(--gray);font-size:11px">comilog.ga</small></div></div></td><td>Mines</td><td>Moanda</td><td style="color:var(--danger);font-weight:700">42/100</td><td><span class="status risk">À risque</span></td><td>95M FCFA</td><td><button class="btn btn-sm btn-outline">Voir</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SEGMENTATION -->
+    <div class="page" id="segmentation">
+      <h1 class="page-title">Segmentation & Classification</h1>
+      <p class="page-subtitle">Analyse multi-critères des entreprises gabonaises</p>
+
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-label">Stabilité élevée</div><div class="kpi-value">142</div></div>
+        <div class="kpi-card blue"><div class="kpi-label">Fort potentiel</div><div class="kpi-value">98</div></div>
+        <div class="kpi-card navy"><div class="kpi-label">Cycliques</div><div class="kpi-value">67</div></div>
+        <div class="kpi-card green"><div class="kpi-label">À risque</div><div class="kpi-value">41</div></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><h3 class="card-title">Matrice Potentiel / Risque</h3></div>
+          <div class="chart-container"><canvas id="chartMatrix"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3 class="card-title">Scoring dynamique</h3></div>
+          <p style="font-size:13px;color:var(--gray);margin-bottom:15px">Évaluez chaque entreprise sur 3 axes clés</p>
+          <div class="form-group">
+            <label>Potentiel de croissance</label>
+            <input type="range" class="form-control" min="0" max="100" value="78">
+          </div>
+          <div class="form-group">
+            <label>Solidité financière</label>
+            <input type="range" class="form-control" min="0" max="100" value="85">
+          </div>
+          <div class="form-group">
+            <label>Appétence au risque</label>
+            <input type="range" class="form-control" min="0" max="100" value="62">
+          </div>
+          <div style="background:var(--blue-pale);padding:15px;border-radius:8px;margin-top:10px">
+            <strong>Score global : 75/100</strong><br>
+            <small style="color:var(--gray)">Classification : <span style="color:var(--orange);font-weight:700">Priorité haute</span></small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CRM -->
+    <div class="page" id="crm">
+      <h1 class="page-title">CRM & Gestion des contacts</h1>
+      <p class="page-subtitle">Historique complet des interactions commerciales</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Fiche entreprise : Gabon Telecom</h3>
+            <button class="btn btn-sm btn-primary">Modifier</button>
+          </div>
+          <div style="display:flex;gap:20px;margin-bottom:20px">
+            <div class="company-logo" style="width:70px;height:70px;font-size:22px">GT</div>
+            <div>
+              <h3 style="margin-bottom:5px">Gabon Telecom SA</h3>
+              <p style="font-size:13px;color:var(--gray)">Télécoms • Libreville • 850 salariés</p>
+              <p style="font-size:13px;margin-top:8px"><strong>Contact :</strong> Pierre Nzé, DAF</p>
+              <p style="font-size:13px"><strong>Email :</strong> p.nze@gabontelecom.ga</p>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:20px">
+            <div style="background:var(--blue-pale);padding:12px;border-radius:8px"><small style="color:var(--gray)">CA annuel</small><br><strong>1,8 Md FCFA</strong></div>
+            <div style="background:var(--blue-pale);padding:12px;border-radius:8px"><small style="color:var(--gray)">Potentiel MSC</small><br><strong>120M FCFA</strong></div>
+            <div style="background:var(--blue-pale);padding:12px;border-radius:8px"><small style="color:var(--gray)">Dernier contact</small><br><strong>Il y a 2 jours</strong></div>
+            <div style="background:var(--blue-pale);padding:12px;border-radius:8px"><small style="color:var(--gray)">Score</small><br><strong style="color:var(--orange)">92/100</strong></div>
+          </div>
+          <h4 style="margin-bottom:10px;font-size:14px">Historique des actions</h4>
+          <div class="timeline">
+            <div class="timeline-item done"><div class="timeline-date">11 oct. 2026</div><div class="timeline-content">Appel téléphonique — discussion financement</div></div>
+            <div class="timeline-item done"><div class="timeline-date">5 oct. 2026</div><div class="timeline-content">RDV physique — présentation offre Premium</div></div>
+            <div class="timeline-item"><div class="timeline-date">28 sept. 2026</div><div class="timeline-content">Email de relance envoyé</div></div>
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <div class="card-header"><h3 class="card-title">Tâches à venir</h3></div>
+            <div style="padding:12px;background:var(--blue-pale);border-radius:8px;margin-bottom:10px;border-left:3px solid var(--orange)">
+              <strong style="font-size:13px">Appel Pharmacie Centrale</strong><br>
+              <small style="color:var(--gray)">Demain 10h00 • 30 min</small>
+            </div>
+            <div style="padding:12px;background:var(--blue-pale);border-radius:8px;margin-bottom:10px;border-left:3px solid var(--blue)">
+              <strong style="font-size:13px">RDV BGFI Bank</strong><br>
+              <small style="color:var(--gray)">14 oct. 14h00 • Siège</small>
+            </div>
+            <div style="padding:12px;background:var(--blue-pale);border-radius:8px;border-left:3px solid var(--success)">
+              <strong style="font-size:13px">Webinaire Santé</strong><br>
+              <small style="color:var(--gray)">18 oct. 11h00 • En ligne</small>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3 class="card-title">Performance commerciale</h3></div>
+            <div class="chart-container" style="height:200px"><canvas id="chartKPI"></canvas></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OFFERS -->
+    <div class="page" id="offers">
+      <h1 class="page-title">Offres & Devis</h1>
+      <p class="page-subtitle">Gestion des propositions commerciales et signature électronique</p>
+
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-label">Devis en cours</div><div class="kpi-value">18</div></div>
+        <div class="kpi-card blue"><div class="kpi-label">Signés ce mois</div><div class="kpi-value">12</div></div>
+        <div class="kpi-card navy"><div class="kpi-label">Taux de closing</div><div class="kpi-value">67%</div></div>
+        <div class="kpi-card green"><div class="kpi-label">Valeur pipeline</div><div class="kpi-value">780M FCFA</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Devis récents</h3>
+          <button class="btn btn-primary">+ Créer un devis</button>
+        </div>
+        <table>
+          <thead><tr><th>N°</th><th>Entreprise</th><th>Montant</th><th>Date</th><th>Statut</th><th>Actions</th></tr></thead>
+          <tbody>
+            <tr><td><strong>DEV-2026-089</strong></td><td>Gabon Telecom</td><td>28 500 000 FCFA</td><td>10 oct. 2026</td><td><span class="status pending">En attente signature</span></td><td><button class="btn btn-sm btn-primary">Relancer</button></td></tr>
+            <tr><td><strong>DEV-2026-088</strong></td><td>Bois Précieux SA</td><td>18 200 000 FCFA</td><td>8 oct. 2026</td><td><span class="status active">Signé</span></td><td><button class="btn btn-sm btn-outline">Voir</button></td></tr>
+            <tr><td><strong>DEV-2026-087</strong></td><td>Pharmacie Centrale</td><td>42 800 000 FCFA</td><td>5 oct. 2026</td><td><span class="status pending">Négociation</span></td><td><button class="btn btn-sm btn-outline">Modifier</button></td></tr>
+            <tr><td><strong>DEV-2026-086</strong></td><td>SOBRAGA</td><td>75 000 000 FCFA</td><td>2 oct. 2026</td><td><span class="status risk">Refusé</span></td><td><button class="btn btn-sm btn-outline">Analyser</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h3 class="card-title">Recommandations automatiques</h3></div>
+        <div class="alert alert-info">🤖 <strong>Gabon Telecom</strong> — Offre "Pack Croissance" recommandée (match 94%)</div>
+        <div class="alert alert-info">🤖 <strong>BGFI Bank</strong> — Offre "Premium Conseil" recommandée (match 89%)</div>
+        <div class="alert alert-info">💡 <strong>Pharmacie Centrale</strong> — Offre "Santé Digitale" recommandée (match 82%)</div>
+      </div>
+    </div>
+
+    <!-- WATCH -->
+    <div class="page" id="watch">
+      <h1 class="page-title">Veille sectorielle & Alertes</h1>
+      <p class="page-subtitle">Signaux économiques et tendances de marché au Gabon</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><h3 class="card-title">Tendances sectorielles</h3></div>
+          <div class="chart-container"><canvas id="chartTrends"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3 class="card-title">Alertes personnalisées</h3><button class="btn btn-sm btn-primary">+ Créer</button></div>
+          <div class="alert alert-warning">️ Ralentissement secteur pétrolier (-8% T3)</div>
+          <div class="alert alert-success">✅ Reprise secteur télécoms (+15% T3)</div>
+          <div class="alert alert-info">📊 Nouvelle réglementation bancaire Q4 2026</div>
+          <div class="alert alert-warning">⚠️ 2 entreprises du portefeuille à risque de churn</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRAINING -->
+    <div class="page" id="training">
+      <h1 class="page-title">Formation des commerciaux</h1>
+      <p class="page-subtitle">E-learning et certification</p>
+
+      <div class="grid-3">
+        <div class="card" style="text-align:center">
+          <div style="width:60px;height:60px;background:var(--blue-pale);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 15px;font-size:24px">📚</div>
+          <h3 style="margin-bottom:8px">Techniques de vente B2B</h3>
+          <p style="font-size:13px;color:var(--gray);margin-bottom:15px">12 modules • 4h30</p>
+          <div class="progress-bar" style="margin-bottom:10px"><div class="progress-fill" style="width:75%"></div></div>
+          <small style="color:var(--gray)">75% complété</small>
+          <button class="btn btn-primary" style="margin-top:15px;width:100%">Continuer</button>
+        </div>
+        <div class="card" style="text-align:center">
+          <div style="width:60px;height:60px;background:var(--blue-pale);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 15px;font-size:24px">🎯</div>
+          <h3 style="margin-bottom:8px">Négociation avancée</h3>
+          <p style="font-size:13px;color:var(--gray);margin-bottom:15px">8 modules • 3h</p>
+          <div class="progress-bar" style="margin-bottom:10px"><div class="progress-fill" style="width:30%"></div></div>
+          <small style="color:var(--gray)">30% complété</small>
+          <button class="btn btn-primary" style="margin-top:15px;width:100%">Continuer</button>
+        </div>
+        <div class="card" style="text-align:center">
+          <div style="width:60px;height:60px;background:var(--blue-pale);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 15px;font-size:24px"></div>
+          <h3 style="margin-bottom:8px">Certification MSC Expert</h3>
+          <p style="font-size:13px;color:var(--gray);margin-bottom:15px">Examen final • 2h</p>
+          <div class="progress-bar" style="margin-bottom:10px"><div class="progress-fill" style="width:0%"></div></div>
+          <small style="color:var(--gray)">Non démarré</small>
+          <button class="btn btn-outline" style="margin-top:15px;width:100%">Commencer</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- NETWORK -->
+    <div class="page" id="network">
+      <h1 class="page-title">Réseau Partenaires</h1>
+      <p class="page-subtitle">Mise en relation et synergies entre entreprises gabonaises</p>
+
+      <div class="card">
+        <div class="card-header"><h3 class="card-title">Synergies détectées</h3></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:15px">
+          <div style="padding:15px;background:var(--blue-pale);border-radius:8px;border-left:4px solid var(--orange)">
+            <strong>Gabon Telecom ↔ Pharmacie Centrale</strong><br>
+            <small style="color:var(--gray)">Solution digitale santé • Potentiel : 55M FCFA</small>
+            <button class="btn btn-sm btn-primary" style="margin-top:10px">Proposer mise en relation</button>
+          </div>
+          <div style="padding:15px;background:var(--blue-pale);border-radius:8px;border-left:4px solid var(--blue)">
+            <strong>Bois Précieux ↔ BGFI Bank</strong><br>
+            <small style="color:var(--gray)">Financement projet vert • Potentiel : 120M FCFA</small>
+            <button class="btn btn-sm btn-primary" style="margin-top:10px">Proposer mise en relation</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FINANCE -->
+    <div class="page" id="finance">
+      <h1 class="page-title">Commissions & Finances</h1>
+      <p class="page-subtitle">Suivi des commissions MSC et paiements en FCFA</p>
+
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-label">Commissions T4</div><div class="kpi-value">85M FCFA</div><div class="kpi-change up">▲ +18%</div></div>
+        <div class="kpi-card blue"><div class="kpi-label">Taux moyen</div><div class="kpi-value">8,5%</div></div>
+        <div class="kpi-card navy"><div class="kpi-label">Paiements en attente</div><div class="kpi-value">22M FCFA</div></div>
+        <div class="kpi-card green"><div class="kpi-label">Objectif annuel</div><div class="kpi-value">78%</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h3 class="card-title">Évolution des commissions (en millions FCFA)</h3></div>
+        <div class="chart-container"><canvas id="chartCommission"></canvas></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="modalPortfolio">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Nouveau portefeuille</h2>
+      <button class="close-btn" onclick="closeModal('modalPortfolio')">×</button>
+    </div>
+    <div class="form-group"><label>Nom du portefeuille</label><input type="text" class="form-control" placeholder="Ex: Pétroliers Libreville 2026"></div>
+    <div class="form-group"><label>Secteur principal</label><select class="form-control"><option>Pétrolier & Minier</option><option>Santé</option><option>Finance</option><option>Bois & Foresterie</option><option>Télécoms</option></select></div>
+    <div class="form-group"><label>Ville</label><select class="form-control"><option>Libreville</option><option>Port-Gentil</option><option>Franceville</option><option>Oyem</option><option>Moanda</option></select></div>
+    <div class="form-group"><label>Commercial assigné</label><select class="form-control"><option>Jean Obame</option><option>Marie Ndong</option><option>Paul Mba</option><option>Sophie Ondo</option></select></div>
+    <div class="form-group"><label>Objectif CA (FCFA)</label><input type="number" class="form-control" placeholder="500000000"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px">
+      <button class="btn btn-outline" onclick="closeModal('modalPortfolio')">Annuler</button>
+      <button class="btn btn-primary" onclick="closeModal('modalPortfolio')">Créer le portefeuille</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Navigation
+document.querySelectorAll('.nav-item').forEach(item=>{
+  item.addEventListener('click',()=>{
+    document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    item.classList.add('active');
+    document.getElementById(item.dataset.page).classList.add('active');
+  });
+});
+
+// Modal
+function openModal(id){document.getElementById(id).classList.add('active')}
+function closeModal(id){document.getElementById(id).classList.remove('active')}
+
+// Charts
+const colors={orange:'#E8440F',blue:'#2E6BA6',navy:'#1A3A5C',light:'#5B85B8',success:'#2ECC71',warning:'#F39C12'};
+
+new Chart(document.getElementById('chartRevenue'),{
+  type:'line',
+  data:{labels:['Nov','Déc','Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct'],
+    datasets:[{label:'CA 2026 (M FCFA)',data:[110,120,128,135,145,140,155,165,158,175,185,195],borderColor:colors.orange,backgroundColor:'rgba(232,68,15,.1)',tension:.4,fill:true,borderWidth:3},
+    {label:'CA 2025 (M FCFA)',data:[95,102,110,118,125,130,138,145,150,155,162,170],borderColor:colors.blue,backgroundColor:'rgba(46,107,166,.1)',tension:.4,fill:true,borderWidth:2}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:true}}}
+});
+
+new Chart(document.getElementById('chartSector'),{
+  type:'doughnut',
+  data:{labels:['Pétrolier & Minier','Santé','Finance','Bois & Foresterie','Télécoms','Agroalimentaire'],
+    datasets:[{data:[35,22,20,10,8,5],backgroundColor:[colors.orange,colors.blue,colors.navy,colors.light,colors.success,colors.warning],borderWidth:0}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}
+});
+
+new Chart(document.getElementById('chartMatrix'),{
+  type:'scatter',
+  data:{datasets:[
+    {label:'Pétrolier',data:[{x:85,y:90},{x:78,y:82},{x:92,y:88},{x:70,y:75}],backgroundColor:colors.orange},
+    {label:'Santé',data:[{x:65,y:78},{x:72,y:85},{x:58,y:70}],backgroundColor:colors.blue},
+    {label:'Finance',data:[{x:88,y:92},{x:95,y:90},{x:80,y:85}],backgroundColor:colors.navy}
+  ]},
+  options:{responsive:true,maintainAspectRatio:false,scales:{x:{title:{display:true,text:'Potentiel'}},y:{title:{display:true,text:'Risque inversé'}}}}
+});
+
+new Chart(document.getElementById('chartKPI'),{
+  type:'bar',
+  data:{labels:['RDV','Appels','Devis','Signés'],datasets:[{label:'Objectif',data:[20,50,15,10],backgroundColor:'rgba(26,58,92,.2)'},{label:'Réalisé',data:[18,45,12,8],backgroundColor:colors.orange}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}
+});
+
+new Chart(document.getElementById('chartTrends'),{
+  type:'line',
+  data:{labels:['T1 25','T2 25','T3 25','T4 25','T1 26','T2 26','T3 26'],
+    datasets:[
+    {label:'Télécoms',data:[100,108,115,122,130,138,148],borderColor:colors.orange,tension:.4,borderWidth:3},
+    {label:'Santé',data:[100,103,106,110,114,118,122],borderColor:colors.blue,tension:.4,borderWidth:3},
+    {label:'Pétrolier',data:[100,98,95,92,90,88,85],borderColor:colors.warning,tension:.4,borderWidth:3}
+  ]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{y:{title:{display:true,text:'Indice base 100'}}}}
+});
+
+new Chart(document.getElementById('chartCommission'),{
+  type:'bar',
+  data:{labels:['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct'],
+    datasets:[{label:'Commissions (M FCFA)',data:[58,62,68,66,72,75,78,82,85,90],backgroundColor:colors.orange,borderRadius:6}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}
+});
+</script>
+</body>
+</html>
